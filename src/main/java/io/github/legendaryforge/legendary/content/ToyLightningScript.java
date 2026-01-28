@@ -18,84 +18,96 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class ToyLightningScript implements EncounterScript {
 
-    public enum RewardTier {
-        NONE,
-        MINOR,
-        MAJOR
-    }
+public enum RewardTier {
+NONE,
+MINOR,
+MAJOR
+}
 
-    private static final class State {
-        private int charge;
-        private int starts;
-        private RewardTier rewardTier = RewardTier.NONE;
-        private boolean ended;
-    }
+private static final class State {
+private int charge;
+private int starts;
+private RewardTier rewardTier = RewardTier.NONE;
+private boolean ended;
+}
 
-    private final ConcurrentHashMap<UUID, State> states = new ConcurrentHashMap<>();
+private final ConcurrentHashMap<UUID, State> states = new ConcurrentHashMap<>();
+private final ConcurrentHashMap<UUID, ToyLightningEndSummary> endSummaries = new ConcurrentHashMap<>();
 
-    @Override
-    public void onStart(EncounterInstance instance, UUID triggeringPlayerId) {
-        Objects.requireNonNull(instance, "instance");
-        Objects.requireNonNull(triggeringPlayerId, "triggeringPlayerId");
-        State s = states.computeIfAbsent(instance.instanceId(), id -> new State());
-        if (!s.ended) {
-            s.starts++;
-        }
-    }
+@Override
+public void onStart(EncounterInstance instance, UUID triggeringPlayerId) {
+Objects.requireNonNull(instance, "instance");
+Objects.requireNonNull(triggeringPlayerId, "triggeringPlayerId");
+State s = states.computeIfAbsent(instance.instanceId(), id -> new State());
+if (!s.ended) {
+s.starts++;
+}
+}
 
-    @Override
-    public void onJoin(EncounterInstance instance, UUID playerId, ParticipationRole role) {
-        Objects.requireNonNull(instance, "instance");
-        Objects.requireNonNull(playerId, "playerId");
-        Objects.requireNonNull(role, "role");
+@Override
+public void onJoin(EncounterInstance instance, UUID playerId, ParticipationRole role) {
+Objects.requireNonNull(instance, "instance");
+Objects.requireNonNull(playerId, "playerId");
+Objects.requireNonNull(role, "role");
 
-        State s = states.computeIfAbsent(instance.instanceId(), id -> new State());
-        if (s.ended) {
-            return;
-        }
+State s = states.computeIfAbsent(instance.instanceId(), id -> new State());
+if (s.ended) {
+return;
+}
 
-        s.charge += (role == ParticipationRole.PARTICIPANT) ? 2 : 1;
-    }
+s.charge += (role == ParticipationRole.PARTICIPANT) ? 2 : 1;
+}
 
-    @Override
-    public void onEnd(EncounterInstance instance) {
-        Objects.requireNonNull(instance, "instance");
+@Override
+public void onEnd(EncounterInstance instance) {
+Objects.requireNonNull(instance, "instance");
 
-        State s = states.computeIfAbsent(instance.instanceId(), id -> new State());
-        if (s.ended) {
-            return;
-        }
-        s.ended = true;
+UUID id = instance.instanceId();
+State s = states.computeIfAbsent(id, ignored -> new State());
+if (s.ended) {
+return;
+}
 
-        int participants = instance.participants().size();
-        int score = participants + s.charge;
+s.ended = true;
 
-        // Deterministic tier thresholds.
-        if (participants <= 0) {
-            s.rewardTier = RewardTier.NONE;
-        } else if (score >= 8) {
-            s.rewardTier = RewardTier.MAJOR;
-        } else {
-            s.rewardTier = RewardTier.MINOR;
-        }
-    }
+int participants = instance.participants().size();
+int score = participants + s.charge;
 
-    public int chargeFor(UUID instanceId) {
-        Objects.requireNonNull(instanceId, "instanceId");
-        State s = states.get(instanceId);
-        return s == null ? 0 : s.charge;
-    }
+// Deterministic tier thresholds.
+if (participants <= 0) {
+s.rewardTier = RewardTier.NONE;
+} else if (score >= 8) {
+s.rewardTier = RewardTier.MAJOR;
+} else {
+s.rewardTier = RewardTier.MINOR;
+}
 
+endSummaries.putIfAbsent(
+id,
+new ToyLightningEndSummary(id, participants, s.charge, s.starts, s.rewardTier)
+);
+}
 
-    public int startsFor(UUID instanceId) {
-        Objects.requireNonNull(instanceId, "instanceId");
-        State s = states.get(instanceId);
-        return s == null ? 0 : s.starts;
-    }
+public int chargeFor(UUID instanceId) {
+Objects.requireNonNull(instanceId, "instanceId");
+State s = states.get(instanceId);
+return s == null ? 0 : s.charge;
+}
 
-    public RewardTier rewardTierFor(UUID instanceId) {
-        Objects.requireNonNull(instanceId, "instanceId");
-        State s = states.get(instanceId);
-        return s == null ? RewardTier.NONE : s.rewardTier;
-    }
+public int startsFor(UUID instanceId) {
+Objects.requireNonNull(instanceId, "instanceId");
+State s = states.get(instanceId);
+return s == null ? 0 : s.starts;
+}
+
+public RewardTier rewardTierFor(UUID instanceId) {
+Objects.requireNonNull(instanceId, "instanceId");
+State s = states.get(instanceId);
+return s == null ? RewardTier.NONE : s.rewardTier;
+}
+
+public ToyLightningEndSummary endSummaryFor(UUID instanceId) {
+Objects.requireNonNull(instanceId, "instanceId");
+return endSummaries.get(instanceId);
+}
 }

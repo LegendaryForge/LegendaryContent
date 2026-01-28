@@ -20,6 +20,7 @@ return new State(phases, next);
 }
 
 private final ConcurrentHashMap<UUID, State> states = new ConcurrentHashMap<>();
+private final ConcurrentHashMap<UUID, ToyStormEndSummary> endSummaries = new ConcurrentHashMap<>();
 
 @Override
 public void onStart(EncounterInstance instance, UUID triggeringPlayerId) {
@@ -59,11 +60,22 @@ return current.withParticipants(nextParticipants);
 @Override
 public void onEnd(EncounterInstance instance) {
 Objects.requireNonNull(instance, "instance");
-// idempotent end; keep state for post-end queries
+
+UUID id = instance.instanceId();
+endSummaries.computeIfAbsent(id, ignored -> {
+EncounterPhase phase = phaseFor(id);
+int participantsAtEnd = instance.participants().size();
+return new ToyStormEndSummary(id, participantsAtEnd, phase);
+});
 }
 
 public EncounterPhase phaseFor(UUID instanceId) {
 State state = states.get(instanceId);
 return state == null ? null : state.phases().current();
+}
+
+public ToyStormEndSummary endSummaryFor(UUID instanceId) {
+Objects.requireNonNull(instanceId, "instanceId");
+return endSummaries.get(instanceId);
 }
 }
