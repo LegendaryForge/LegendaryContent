@@ -12,7 +12,7 @@ Only proven seams get promoted into core.
 - A toy encounter definition (`ToyLightningEncounterDefinition`).
 - A content-side script abstraction (`EncounterScript`) and example script (`ToyLightningScript`).
 - Content-side wiring:
-  - `ScriptedEncounterManager` (decorates `EncounterManager` to call script hooks on join/end)
+  - `ScriptedEncounterManager` (decorates `EncounterManager` to call script hooks on join)
   - `ScriptEventBridge` (subscribes to core events for start/end and calls script hooks)
 
 ## Run tests
