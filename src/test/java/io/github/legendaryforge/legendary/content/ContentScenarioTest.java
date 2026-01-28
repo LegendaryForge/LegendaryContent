@@ -25,7 +25,13 @@ public final class ContentScenarioTest {
         DefaultCoreRuntime runtime = new DefaultCoreRuntime();
 
         ToyLightningScript script = new ToyLightningScript();
-        EncounterManager encounters = new ScriptedEncounterManager(runtime.encounters(), script);
+        EncounterManager base = runtime.encounters();
+
+        // Event bridge wires start/end lifecycle events into the script.
+        new ScriptEventBridge(runtime.events(), base, script);
+
+        // Decorator wires join/end calls into the script as a content-side integration point.
+        EncounterManager encounters = new ScriptedEncounterManager(base, script);
 
         ToyLightningEncounterDefinition def = new ToyLightningEncounterDefinition(
                 ResourceId.of("legendarycontent", "toy_lightning")
@@ -43,6 +49,10 @@ public final class ContentScenarioTest {
         UUID s1 = UUID.randomUUID();
 
         assertEquals(JoinResult.SUCCESS, encounters.join(p1, instance, ParticipationRole.PARTICIPANT));
+
+        // Start should have been emitted exactly once and bridged into the script.
+        assertEquals(1, script.startsFor(instance.instanceId()));
+
         assertEquals(JoinResult.SUCCESS, encounters.join(s1, instance, ParticipationRole.SPECTATOR));
 
         // Script hook ran on successful joins: p(+2) + s(+1) = 3.

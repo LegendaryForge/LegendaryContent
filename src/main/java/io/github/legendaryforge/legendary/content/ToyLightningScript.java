@@ -26,6 +26,7 @@ public final class ToyLightningScript implements EncounterScript {
 
     private static final class State {
         private int charge;
+        private int starts;
         private RewardTier rewardTier = RewardTier.NONE;
         private boolean ended;
     }
@@ -36,7 +37,10 @@ public final class ToyLightningScript implements EncounterScript {
     public void onStart(EncounterInstance instance, UUID triggeringPlayerId) {
         Objects.requireNonNull(instance, "instance");
         Objects.requireNonNull(triggeringPlayerId, "triggeringPlayerId");
-        states.computeIfAbsent(instance.instanceId(), id -> new State());
+        State s = states.computeIfAbsent(instance.instanceId(), id -> new State());
+        if (!s.ended) {
+            s.starts++;
+        }
     }
 
     @Override
@@ -80,6 +84,13 @@ public final class ToyLightningScript implements EncounterScript {
         Objects.requireNonNull(instanceId, "instanceId");
         State s = states.get(instanceId);
         return s == null ? 0 : s.charge;
+    }
+
+
+    public int startsFor(UUID instanceId) {
+        Objects.requireNonNull(instanceId, "instanceId");
+        State s = states.get(instanceId);
+        return s == null ? 0 : s.starts;
     }
 
     public RewardTier rewardTierFor(UUID instanceId) {
