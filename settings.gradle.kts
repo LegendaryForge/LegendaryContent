@@ -1,3 +1,7 @@
 rootProject.name = "LegendaryContent"
 
-includeBuild("../LegendaryCore")
+includeBuild("../LegendaryCore") {
+    dependencySubstitution {
+        substitute(module("com.example:LegendaryCore")).using(project(":"))
+    }
+}
