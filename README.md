@@ -20,3 +20,13 @@ Only proven seams get promoted into core.
 ```
 ./gradlew clean test
 ```
+
+## Scope boundary (important)
+
+This repo focuses on **content-side behavior** once a player is admitted to an encounter (start semantics, spectator joins, script hooks, deterministic patterns).
+
+**Party membership / access control** (e.g., PARTY_ONLY, INVITE_ONLY, late-joiner rules, PartyDirectory wiring) is treated as a **separate concern** and is validated in:
+- **LegendaryCore** integration tests
+- **LegendaryDogfood** consumer-side contract tests
+
+LegendaryContent intentionally avoids coupling content scripts to party mechanics unless a specific content feature requires it.
