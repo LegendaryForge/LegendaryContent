@@ -13,10 +13,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Content-side decorator that wires an {@link EncounterScript} into the encounter lifecycle.
+ * Content-side decorator that wires an {@link EncounterScript} into join semantics.
  *
  * <p>Intentionally lives in LegendaryContent (not core). This helps us dogfood what hooks are
  * truly needed before promoting anything into LegendaryCore.
+ *
+ * <p>Note: {@link EncounterScript#onStart} and {@link EncounterScript#onEnd} are wired via
+ * {@link ScriptEventBridge} (event-driven) to avoid missed signals and to prevent double-dispatch.
  */
 public final class ScriptedEncounterManager implements EncounterManager {
 
@@ -50,7 +53,7 @@ public final class ScriptedEncounterManager implements EncounterManager {
     @Override
     public void end(EncounterInstance instance, EndReason reason) {
         delegate.end(instance, reason);
-        script.onEnd(instance);
+        // onEnd is event-driven via ScriptEventBridge to avoid double-dispatch.
     }
 
     @Override
