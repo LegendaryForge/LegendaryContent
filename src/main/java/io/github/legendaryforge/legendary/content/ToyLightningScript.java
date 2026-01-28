@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>Deterministic rules:
  * <ul>
  *   <li>Participant join: +2 charge</li>
- *   <li>Spectator join: +1 charge</li>
+ *   <li>Spectator join: +0 charge (view-only)</li>
  *   <li>Reward tier at end depends only on (participants at end) and (charge)</li>
  * </ul>
  */
@@ -55,7 +55,9 @@ if (s.ended) {
 return;
 }
 
-s.charge += (role == ParticipationRole.PARTICIPANT) ? 2 : 1;
+if (role == ParticipationRole.PARTICIPANT) {
+        s.charge += 2;
+    }
 }
 
 @Override

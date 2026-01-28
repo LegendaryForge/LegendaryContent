@@ -52,12 +52,12 @@ public final class ToyLightningScriptTest {
         encounters.join(s1, instance, ParticipationRole.SPECTATOR);
         script.onJoin(instance, s1, ParticipationRole.SPECTATOR);
 
-        // charge: p1(+2) + p2(+2) + s1(+1) = 5
-        assertEquals(5, script.chargeFor(instance.instanceId()));
+        // charge: p1(+2) + p2(+2) + s1(+0) = 4
+        assertEquals(4, script.chargeFor(instance.instanceId()));
 
         script.onEnd(instance);
 
-        // participants at end = 2, score = 2 + 5 = 7 => MINOR per thresholds.
+        // participants at end = 2, score = 2 + 4 = 6 => MINOR per thresholds.
         assertEquals(RewardTier.MINOR, script.rewardTierFor(instance.instanceId()));
 
         // idempotent end

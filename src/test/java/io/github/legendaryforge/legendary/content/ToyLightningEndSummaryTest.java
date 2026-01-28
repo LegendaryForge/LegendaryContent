@@ -57,7 +57,7 @@ ToyLightningEndSummary summary = script.endSummaryFor(instance.instanceId());
 
 assertEquals(instance.instanceId(), summary.instanceId());
 assertEquals(2, summary.participantsAtEnd());
-assertEquals(5, summary.chargeAtEnd());
+assertEquals(4, summary.chargeAtEnd());
 assertEquals(2, summary.starts());
 assertEquals(ToyLightningScript.RewardTier.MINOR, summary.rewardTier());
 

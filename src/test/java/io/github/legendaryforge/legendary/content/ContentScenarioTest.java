@@ -55,8 +55,8 @@ public final class ContentScenarioTest {
 
         assertEquals(JoinResult.SUCCESS, encounters.join(s1, instance, ParticipationRole.SPECTATOR));
 
-        // Script hook ran on successful joins: p(+2) + s(+1) = 3.
-        assertEquals(3, script.chargeFor(instance.instanceId()));
+        // Script hook ran on successful joins: p(+2) + s(+0) = 2.
+        assertEquals(2, script.chargeFor(instance.instanceId()));
 
         encounters.end(instance, EndReason.COMPLETED);
         assertEquals(RewardTier.MINOR, script.rewardTierFor(instance.instanceId()));
