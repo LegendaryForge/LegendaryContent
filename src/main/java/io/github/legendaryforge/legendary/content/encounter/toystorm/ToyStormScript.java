@@ -78,4 +78,10 @@ public ToyStormEndSummary endSummaryFor(UUID instanceId) {
 Objects.requireNonNull(instanceId, "instanceId");
 return endSummaries.get(instanceId);
 }
+
+public void cleanup(UUID instanceId) {
+Objects.requireNonNull(instanceId, "instanceId");
+states.remove(instanceId);
+}
+
 }
