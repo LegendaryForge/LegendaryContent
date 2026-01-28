@@ -3,24 +3,32 @@ package io.github.legendaryforge.legendary.content.encounter.toystorm;
 import io.github.legendaryforge.legendary.content.EncounterScript;
 import io.github.legendaryforge.legendary.core.api.encounter.EncounterInstance;
 import io.github.legendaryforge.legendary.core.api.encounter.ParticipationRole;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class ToyStormScript implements EncounterScript {
 
-private final Map<UUID, PhaseMachine> phasesByInstance = new ConcurrentHashMap<>();
-private final Map<UUID, Integer> participantsByInstance = new ConcurrentHashMap<>();
+private record State(PhaseMachine phases, int participants) {
+State {
+Objects.requireNonNull(phases, "phases");
+}
+
+State withParticipants(int next) {
+return new State(phases, next);
+}
+}
+
+private final ConcurrentHashMap<UUID, State> states = new ConcurrentHashMap<>();
 
 @Override
 public void onStart(EncounterInstance instance, UUID triggeringPlayerId) {
 Objects.requireNonNull(instance, "instance");
 Objects.requireNonNull(triggeringPlayerId, "triggeringPlayerId");
 
-PhaseMachine phases = phasesByInstance.computeIfAbsent(instance.instanceId(), k -> new PhaseMachine());
-phases.enter(EncounterPhase.CHARGE, p -> {});
-participantsByInstance.putIfAbsent(instance.instanceId(), 0);
+UUID id = instance.instanceId();
+State state = states.computeIfAbsent(id, k -> new State(new PhaseMachine(), 0));
+state.phases().enter(EncounterPhase.CHARGE, p -> {});
 }
 
 @Override
@@ -34,26 +42,28 @@ return;
 }
 
 UUID id = instance.instanceId();
-participantsByInstance.merge(id, 1, Integer::sum);
+states.compute(id, (k, prev) -> {
+State current = prev == null ? new State(new PhaseMachine(), 0) : prev;
+int nextParticipants = current.participants() + 1;
 
-PhaseMachine phases = phasesByInstance.computeIfAbsent(id, k -> new PhaseMachine());
-int participants = participantsByInstance.getOrDefault(id, 0);
-
-if (participants == 1) {
-phases.enter(EncounterPhase.DISCHARGE, p -> {});
-} else if (participants == 2) {
-phases.enter(EncounterPhase.RECOVERY, p -> {});
+if (nextParticipants == 1) {
+current.phases().enter(EncounterPhase.DISCHARGE, p -> {});
+} else if (nextParticipants == 2) {
+current.phases().enter(EncounterPhase.RECOVERY, p -> {});
 }
+
+return current.withParticipants(nextParticipants);
+});
 }
 
 @Override
 public void onEnd(EncounterInstance instance) {
 Objects.requireNonNull(instance, "instance");
-// idempotent end; keep state for post-end queries if desired
+// idempotent end; keep state for post-end queries
 }
 
 public EncounterPhase phaseFor(UUID instanceId) {
-PhaseMachine phases = phasesByInstance.get(instanceId);
-return phases == null ? null : phases.current();
+State state = states.get(instanceId);
+return state == null ? null : state.phases().current();
 }
 }
