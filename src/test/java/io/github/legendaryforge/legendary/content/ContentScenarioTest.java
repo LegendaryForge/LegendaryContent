@@ -2,6 +2,7 @@ package io.github.legendaryforge.legendary.content;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.github.legendaryforge.legendary.content.ToyLightningScript.RewardTier;
 import io.github.legendaryforge.legendary.core.api.encounter.EncounterAnchor;
 import io.github.legendaryforge.legendary.core.api.encounter.EncounterContext;
 import io.github.legendaryforge.legendary.core.api.encounter.EncounterInstance;
@@ -12,6 +13,7 @@ import io.github.legendaryforge.legendary.core.api.encounter.ParticipationRole;
 import io.github.legendaryforge.legendary.core.api.id.ResourceId;
 import io.github.legendaryforge.legendary.core.internal.runtime.DefaultCoreRuntime;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 public final class ContentScenarioTest {
@@ -21,7 +23,9 @@ public final class ContentScenarioTest {
     @Test
     void toyLightningEncounter_flow() {
         DefaultCoreRuntime runtime = new DefaultCoreRuntime();
-        EncounterManager encounters = runtime.encounters();
+
+        ToyLightningScript script = new ToyLightningScript();
+        EncounterManager encounters = new ScriptedEncounterManager(runtime.encounters(), script);
 
         ToyLightningEncounterDefinition def = new ToyLightningEncounterDefinition(
                 ResourceId.of("legendarycontent", "toy_lightning")
@@ -35,10 +39,19 @@ public final class ContentScenarioTest {
         EncounterContext ctx = new SimpleContext(anchor, Map.of("note", "content_scenario"));
         EncounterInstance instance = encounters.create(def, ctx);
 
-        assertEquals(JoinResult.SUCCESS, encounters.join(java.util.UUID.randomUUID(), instance, ParticipationRole.PARTICIPANT));
-        assertEquals(JoinResult.SUCCESS, encounters.join(java.util.UUID.randomUUID(), instance, ParticipationRole.SPECTATOR));
+        UUID p1 = UUID.randomUUID();
+        UUID s1 = UUID.randomUUID();
+
+        assertEquals(JoinResult.SUCCESS, encounters.join(p1, instance, ParticipationRole.PARTICIPANT));
+        assertEquals(JoinResult.SUCCESS, encounters.join(s1, instance, ParticipationRole.SPECTATOR));
+
+        // Script hook ran on successful joins: p(+2) + s(+1) = 3.
+        assertEquals(3, script.chargeFor(instance.instanceId()));
 
         encounters.end(instance, EndReason.COMPLETED);
-        assertEquals(JoinResult.DENIED_STATE, encounters.join(java.util.UUID.randomUUID(), instance, ParticipationRole.SPECTATOR));
+        assertEquals(RewardTier.MINOR, script.rewardTierFor(instance.instanceId()));
+
+        // Core denies post-end join.
+        assertEquals(JoinResult.DENIED_STATE, encounters.join(UUID.randomUUID(), instance, ParticipationRole.SPECTATOR));
     }
 }
