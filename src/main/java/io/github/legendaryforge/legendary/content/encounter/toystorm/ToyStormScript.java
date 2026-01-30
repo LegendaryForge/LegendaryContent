@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class ToyStormScript implements EncounterScript {
+public final class ToyStormScript implements EncounterScript, io.github.legendaryforge.legendary.content.EncounterCleanupHandler {
 
 private record State(PhaseMachine phases, int participants) {
 State {
@@ -82,6 +82,13 @@ return endSummaries.get(instanceId);
 public void cleanup(UUID instanceId) {
 Objects.requireNonNull(instanceId, "instanceId");
 states.remove(instanceId);
+}
+
+
+@Override
+public void onCleanup(UUID instanceId) {
+Objects.requireNonNull(instanceId, "instanceId");
+cleanup(instanceId);
 }
 
 }

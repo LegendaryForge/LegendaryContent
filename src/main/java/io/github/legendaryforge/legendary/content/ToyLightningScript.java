@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *   <li>Reward tier at end depends only on (participants at end) and (charge)</li>
  * </ul>
  */
-public final class ToyLightningScript implements EncounterScript {
+public final class ToyLightningScript implements EncounterScript, EncounterCleanupHandler {
 
 public enum RewardTier {
 NONE,
@@ -116,6 +116,13 @@ return endSummaries.get(instanceId);
 public void cleanup(UUID instanceId) {
 Objects.requireNonNull(instanceId, "instanceId");
 states.remove(instanceId);
+}
+
+
+@Override
+public void onCleanup(UUID instanceId) {
+Objects.requireNonNull(instanceId, "instanceId");
+cleanup(instanceId);
 }
 
 }
