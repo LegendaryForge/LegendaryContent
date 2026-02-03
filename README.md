@@ -1,6 +1,9 @@
 # LegendaryContent
 
-LegendaryContent is a small legendary content mod built to dogfood **LegendaryCore**.
+
+
+Dogfooding and validation mod for LegendaryCore and Legendary gameplay systems.
+
 
 Its purpose is to validate encounter lifecycle seams *outside* of Core before any behavior or abstraction is promoted upstream. All gameplay behavior lives here first; Core is responsible only for signaling lifecycle events.
 
