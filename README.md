@@ -112,3 +112,7 @@ Run:
 
 ```bash
 ./gradlew clean test
+
+## License
+
+MIT — see [LICENSE](LICENSE).
