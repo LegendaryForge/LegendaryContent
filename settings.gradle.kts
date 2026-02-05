@@ -8,6 +8,6 @@ includeBuild("../LegendaryCore") {
 
 includeBuild("../Legendary") {
 dependencySubstitution {
-substitute(module("com.example:Legendary")).using(project(":"))
+substitute(module("io.github.legendaryforge:Legendary")).using(project(":"))
 }
 }

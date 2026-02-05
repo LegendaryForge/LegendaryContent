@@ -9,7 +9,7 @@ repositories {
 dependencies {
     // Composite build substitution will replace this with the included LegendaryCore build.
     implementation("com.example:LegendaryCore:1.0.0")
-implementation("com.example:Legendary:1.0.0")
+implementation("io.github.legendaryforge:Legendary:0.0.0-SNAPSHOT")
 
     testImplementation(platform("org.junit:junit-bom:5.10.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
