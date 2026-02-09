@@ -97,7 +97,7 @@ final class AnchoredTrialDogfoodHarnessTest {
 
     @Override
     public StormseekerProgress progress(String playerId) {
-      return progress.get(playerId);
+      return progress.computeIfAbsent(playerId, id -> new StormseekerProgress());
     }
 
     @Override
